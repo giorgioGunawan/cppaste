@@ -57,7 +57,7 @@
                 notesContainer.innerHTML = "";
                 notes.forEach(note => {
                     const div = document.createElement("div");
-                    if (note.startsWith("http://") || note.startsWith("https://")) {
+                    if (note.includes("://")) {  // General URI scheme check
                         const a = document.createElement("a");
                         a.href = note;
                         a.textContent = note;
