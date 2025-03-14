@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>copy paste notes</title>
+    <script>
+        const BIN_ID = "67d378958960c979a571202b";
+        const API_KEY = "$2a$10$c9w1IyRQ4cAnOu09tBGhgehynOpDx7QuaQU6kRPAGJwDCN2dBG48G";
+        const API_URL = `https://api.jsonbin.io/v3/b/${BIN_ID}`;
+
+        document.addEventListener("DOMContentLoaded", async () => {
+            const notesContainer = document.getElementById("notes");
+            const input = document.getElementById("noteInput");
+            const saveBtn = document.getElementById("saveNote");
+            let notes = [];
+
+            async function fetchNotes() {
+                try {
+                    const response = await fetch(API_URL, {
+                        headers: { "X-Master-Key": API_KEY }
+                    });
+                    const data = await response.json();
+                    notes = data.record.notes || [];
+                    loadNotes();
+                } catch (error) {
+                    console.error("Error fetching notes:", error);
+                }
+            }
+
+            async function saveNotes() {
+                try {
+                    await fetch(API_URL, {
+                        method: "PUT",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "X-Master-Key": API_KEY
+                        },
+                        body: JSON.stringify({ notes })
+                    });
+                } catch (error) {
+                    console.error("Error saving notes:", error);
+                }
+            }
+
+            saveBtn.addEventListener("click", async () => {
+                const note = input.value.trim();
+                if (note) {
+                    notes.push(note);
+                    input.value = "";
+                    loadNotes();
+                    await saveNotes();
+                }
+            });
+
+            function loadNotes() {
+                notesContainer.innerHTML = "";
+                notes.forEach(note => {
+                    const div = document.createElement("div");
+                    if (note.startsWith("http://") || note.startsWith("https://")) {
+                        const a = document.createElement("a");
+                        a.href = note;
+                        a.textContent = note;
+                        a.target = "_blank";
+                        div.appendChild(a);
+                    } else {
+                        div.textContent = note;
+                    }
+                    notesContainer.appendChild(div);
+                });
+            }
+
+            await fetchNotes();
+        });
+    </script>
+</head>
+<body>
+    <h1>Persistent Notes</h1>
+    <input type="text" id="noteInput" placeholder="Paste your link or note here">
+    <button id="saveNote">Save</button>
+    <div id="notes"></div>
+</body>
+</html>
